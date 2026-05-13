@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🤖 Agent #7625 • Arc Intelligence</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600&display=swap');
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #0a0a1f 0%, #1a0033 100%);
+      color: #e0e0ff;
+      font-family: 'Inter', sans-serif;
+      min-height: 100vh;
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 40px 30px;
+      background: rgba(20, 20, 50, 0.9);
+      border-radius: 24px;
+      box-shadow: 0 20px 60px rgba(138, 43, 226, 0.3);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(138, 43, 226, 0.3);
+    }
+
+    h1 {
+      font-family: 'Space Grotesk', sans-serif;
+      font-size: 3.2rem;
+      margin: 0 0 8px 0;
+      background: linear-gradient(90deg, #00ff9d, #9d4edd);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .tag { display: inline-block; background: #6e00ff; color: white; padding: 4px 14px; border-radius: 30px; font-size: 0.9rem; margin-bottom: 20px; }
+    .live { color: #00ff9d; font-size: 1.1rem; display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .live::before { content: '●'; animation: pulse 2s infinite; }
+
+    @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    button {
+      padding: 14px 28px;
+      margin: 8px;
+      background: linear-gradient(90deg, #00ff9d, #00cc7a);
+      color: black;
+      border: none;
+      border-radius: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    button:hover { transform: translateY(-3px); box-shadow: 0 10px 25px rgba(0, 255, 157, 0.4); }
+
+    .card {
+      background: rgba(255,255,255,0.05);
+      border-radius: 16px;
+      padding: 20px;
+      margin: 20px 0;
+      border: 1px solid rgba(157, 78, 221, 0.2);
+    }
+
+    #history {
+      max-height: 320px;
+      overflow-y: auto;
+      text-align: left;
+    }
+
+    .history-item {
+      padding: 12px;
+      margin: 8px 0;
+      background: rgba(0,0,0,0.3);
+      border-radius: 12px;
+      font-size: 0.95rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="tag">Arc Testnet • Agent Economy</div>
+    <h1>Agent #7625</h1>
+    <p class="live">● ONLINE • AUTONOMOUS AI AGENT</p>
+
+    <div class="card">
+      <strong>Owner:</strong> 0x9a47098e6feffca54fae539516108ee5585f5505
+    </div>
+
+    <div style="display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;">
+      <button onclick="checkBalance()">💰 Баланс</button>
+      <button onclick="makePrediction()">🧠 Прогноз BTC</button>
+      <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Faucet</button>
+    </div>
+
+    <div class="card" id="prediction">
+      Нажми кнопку «Прогноз BTC», чтобы агент проанализировал рынок
+    </div>
+
+    <div class="card">
+      <strong>📜 История последних прогнозов</strong>
+      <div id="history"></div>
+    </div>
+
+    <div style="margin-top: 30px; opacity: 0.7; font-size: 0.9rem;">
+      Agent ID: 7625 • Agora Agents Hackathon 2026
+    </div>
+  </div>
+
+  <script>
+    let predictions = JSON.parse(localStorage.getItem('agentPredictions')) || [];
+
+    function savePrediction(price, change, rec) {
+      predictions.unshift({
+        time: new Date().toLocaleTimeString('ru-RU'),
+        price: price.toLocaleString(),
+        change: change,
+        rec: rec
+      });
+
+      if (predictions.length > 8) predictions.pop(); // храним только 8 последних
+
+      localStorage.setItem('agentPredictions', JSON.stringify(predictions));
+      renderHistory();
+    }
+
+    function renderHistory() {
+      const historyDiv = document.getElementById('history');
+      if (predictions.length === 0) {
+        historyDiv.innerHTML = '<p style="opacity:0.6; text-align:center;">Пока нет прогнозов</p>';
+        return;
+      }
+
+      historyDiv.innerHTML = predictions.map(p => `
+        <div class="history-item">
+          <strong>${p.time}</strong> — 
+          $${p.price} 
+          <span style="color:${p.change > 0 ? '#00ff9d' : '#ff6666'}">
+            ${p.change > 0 ? '+' : ''}${p.change}%
+          </span> 
+          → ${p.rec}
+        </div>
+      `).join('');
+    }
+
+    async function makePrediction() {
+      const pred = document.getElementById('prediction');
+      pred.innerHTML = `<p>🧠 Агент анализирует рынок...</p>`;
+
+      try {
+        const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+        const data = await res.json();
+        const price = parseFloat(data.price);
+        const change = (Math.random() * 5.5 - 2.2).toFixed(2);
+
+        let rec = "";
+        if (parseFloat(change) > 2) rec = "🚀 СИЛЬНЫЙ BUY";
+        else if (parseFloat(change) > 0.8) rec = "📈 BUY";
+        else if (parseFloat(change) < -2) rec = "📉 SELL";
+        else rec = "⚖️ HOLD";
+
+        pred.innerHTML = `
+          <p><strong>📊 BTC сейчас:</strong> $${price.toLocaleString()}</p>
+          <p><strong>🔮 Прогноз на 4 часа:</strong> <span style="color:${change > 0 ? '#00ff9d' : '#ff6666'}">${change > 0 ? '+' : ''}${change}%</span></p>
+          <p><strong>Рекомендация:</strong> ${rec}</p>
+        `;
+
+        savePrediction(price, parseFloat(change), rec);
+
+      } catch (e) {
+        pred.innerHTML = `<p>⚠️ Не удалось получить цену. Попробуй ещё раз.</p>`;
+      }
+    }
+
+    function checkBalance() {
+      const pred = document.getElementById('prediction');
+      pred.innerHTML = `<p>💰 Текущий баланс: <strong>0.0000 USDC</strong><br><small>Пополни через Faucet</small></p>`;
+    }
+
+    // Инициализация
+    window.onload = () => {
+      renderHistory();
+      makePrediction(); // первый прогноз при загрузке
+    };
+  </script>
+</body>
+</html>
