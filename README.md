@@ -1,17 +1,17 @@
 # 🤖 AI Agent #7625 — Arc Testnet
 
-**Autonomous AI Agent** with BTC price prediction and beautiful dashboard.
+**Autonomous AI Agent** with BTC price prediction, live dashboard and CLI interface.
 
-Built during **Agora Agents Hackathon 2026**.
+Built during **Agora Agents Hackathon 2026** (Canteen × Circle × Arc).
 
 ---
 
 ### ✨ Features
-- On-chain AI Agent (ID: **7625**)
+- On-chain registration (ERC-8004) — **Agent ID: 7625**
+- Reputation system
 - Real BTC price prediction (Binance API)
-- Interactive terminal commands
+- Interactive CLI agent
 - Modern web dashboard with prediction history
-- Reputation on Arc
 
 ---
 
