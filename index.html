@@ -2,33 +2,89 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Asil</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Asil — AI Agent</title>
   <style>
-    body { font-family: Arial; padding: 40px; background: #f0f0f0; }
-    .box { background: white; padding: 30px; border-radius: 15px; max-width: 600px; margin: auto; }
-    input, button { padding: 12px; margin: 10px 0; width: 100%; font-size: 16px; }
-    button { background: purple; color: white; border: none; border-radius: 8px; }
+    body {
+      font-family: Arial, sans-serif;
+      background: #f8f9fa;
+      margin: 0;
+      padding: 40px;
+    }
+    .container {
+      max-width: 700px;
+      margin: auto;
+      background: white;
+      padding: 40px;
+      border-radius: 16px;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+      text-align: center;
+    }
+    h1 {
+      color: #6b21a8;
+    }
+    .creature {
+      width: 180px;
+      height: 180px;
+      background: url('https://files.catbox.moe/mewziy.png') center/contain no-repeat;
+      margin: 20px auto;
+    }
+    input {
+      width: 100%;
+      padding: 12px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 16px;
+    }
+    button {
+      padding: 14px 32px;
+      background: #6b21a8;
+      color: white;
+      border: none;
+      border-radius: 12px;
+      font-size: 16px;
+      cursor: pointer;
+      margin: 10px;
+    }
+    button:hover {
+      background: #7c3aed;
+    }
   </style>
 </head>
 <body>
-  <div class="box">
-    <h1>Asil Agent</h1>
-    <p>Send USDC</p>
+  <div class="container">
+    <div class="creature"></div>
+    <h1>Asil</h1>
+    <p>Autonomous AI Agent #7625 on Arc Testnet</p>
+
+    <h3>💸 Send USDC</h3>
     <input type="text" id="addr" placeholder="0x... адрес получателя" />
-    <input type="number" id="sum" placeholder="Сумма" step="0.01" />
-    <button onclick="send()">Отправить</button>
+    <input type="number" id="amt" placeholder="Сумма" step="0.01" />
+    <button onclick="sendUSDC()">Отправить USDC</button>
+
+    <p style="margin-top:30px;">
+      <button onclick="makePrediction()">🧠 Прогноз BTC</button>
+      <button onclick="window.open('https://t.me/asil_agent_bot','_blank')">💬 Telegram Bot</button>
+    </p>
   </div>
 
   <script>
-    function send() {
-      const addr = document.getElementById('addr').value;
-      const sum = document.getElementById('sum').value;
-      if (addr && sum) {
-        alert(`Команда:\nsend ${addr} ${sum}\n\nСкопировано в буфер`);
-        navigator.clipboard.writeText(`send ${addr} ${sum}`);
+    function sendUSDC() {
+      const addr = document.getElementById('addr').value.trim();
+      const amt = document.getElementById('amt').value.trim();
+      
+      if (addr && amt) {
+        const cmd = `send ${addr} ${amt}`;
+        navigator.clipboard.writeText(cmd);
+        alert('✅ Команда скопирована!\n\n' + cmd + '\n\nВставь её в терминал, где запущен Asil');
       } else {
-        alert("Заполни оба поля");
+        alert('Заполни оба поля');
       }
+    }
+
+    function makePrediction() {
+      alert('🧠 Asil думает... Проверь терминал для полного прогноза');
     }
   </script>
 </body>
