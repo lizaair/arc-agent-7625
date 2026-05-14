@@ -2,172 +2,34 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asil — Autonomous AI Agent</title>
+  <title>Asil</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
-
-    body {
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      color: #1f1f1f;
-      font-family: 'Inter', system-ui, sans-serif;
-    }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 40px 60px;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 50px;
-      margin-bottom: 50px;
-    }
-
-    .creature {
-      width: 230px;
-      height: 230px;
-      background: url('https://files.catbox.moe/mewziy.png') center/contain no-repeat;
-      flex-shrink: 0;
-      filter: drop-shadow(0 20px 35px rgba(0,0,0,0.18));
-    }
-
-    h1 {
-      font-family: 'Space+Grotesk', sans-serif;
-      font-size: 3.4rem;
-      margin: 0 0 12px 0;
-      font-weight: 700;
-    }
-
-    .tag {
-      display: inline-block;
-      background: #6b21a8;
-      color: white;
-      padding: 6px 18px;
-      border-radius: 9999px;
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-
-    .buttons {
-      display: flex;
-      gap: 14px;
-      flex-wrap: wrap;
-      margin: 40px 0;
-    }
-
-    button {
-      padding: 16px 36px;
-      background: #6b21a8;
-      color: white;
-      border: none;
-      border-radius: 9999px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-    }
-
-    button:hover {
-      background: #7c3aed;
-      transform: translateY(-3px);
-    }
-
-    .card {
-      background: #f8f9fa;
-      border-radius: 20px;
-      padding: 28px;
-      margin: 30px 0;
-    }
+    body { font-family: Arial; padding: 40px; background: #f0f0f0; }
+    .box { background: white; padding: 30px; border-radius: 15px; max-width: 600px; margin: auto; }
+    input, button { padding: 12px; margin: 10px 0; width: 100%; font-size: 16px; }
+    button { background: purple; color: white; border: none; border-radius: 8px; }
   </style>
 </head>
 <body>
-  <div class="container">
-    <div class="header">
-      <div class="creature"></div>
-      <div>
-        <div class="tag">Built on Arc Testnet</div>
-        <h1>Asil</h1>
-        <p style="font-size:1.3rem; opacity:0.9;">
-          Autonomous AI Agent #7625
-        </p>
-        <p style="max-width:520px; margin-top:12px; line-height:1.5;">
-          Intelligent agent living on Arc. Making predictions, learning, and interacting with the world.
-        </p>
-      </div>
-    </div>
-
-    <div class="buttons">
-      <button onclick="makePrediction()">🧠 BTC Prediction</button>
-      <button onclick="window.open('https://t.me/asil_agent_bot', '_blank')">💬 Telegram Bot</button>
-      <button onclick="window.open('https://faucet.circle.com/?address=0xb32380d13dec593f6afd3e23af397f3c7e5a0639&blockchain=arc-testnet&token=USDC', '_blank')">🚰 Get Test USDC</button>
-    </div>
-
-    <div class="card" id="prediction">
-      Click a button to interact with Asil
-    </div>
-
-    <div class="card">
-      <strong>Prediction History</strong>
-      <div id="history"></div>
-    </div>
-
-    <p style="text-align:center; margin-top:80px; opacity:0.7;">
-      Built during Agora Agents Hackathon 2026 on Arc Testnet
-    </p>
+  <div class="box">
+    <h1>Asil Agent</h1>
+    <p>Send USDC</p>
+    <input type="text" id="addr" placeholder="0x... адрес получателя" />
+    <input type="number" id="sum" placeholder="Сумма" step="0.01" />
+    <button onclick="send()">Отправить</button>
   </div>
 
   <script>
-    let predictions = JSON.parse(localStorage.getItem('agentPredictions')) || [];
-
-    function renderHistory() {
-      const div = document.getElementById('history');
-      if (predictions.length === 0) {
-        div.innerHTML = '<p style="opacity:0.6;">No predictions yet</p>';
-        return;
-      }
-      div.innerHTML = predictions.map(p => `
-        <div style="padding:16px;margin:12px 0;background:white;border-radius:16px;border-left:4px solid #6b21a8;">
-          <strong>${p.time}</strong> — $${p.price} 
-          <span style="color:${p.change > 0 ? '#6b21a8' : '#9f1239'}">${p.change > 0 ? '+' : ''}${p.change}%</span> → ${p.rec}
-        </div>
-      `).join('');
-    }
-
-    async function makePrediction() {
-      const pred = document.getElementById('prediction');
-      pred.innerHTML = `<p>🧠 Asil is thinking...</p>`;
-
-      try {
-        const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
-        const data = await res.json();
-        const price = parseFloat(data.price);
-        const change = (Math.random() * 6 - 2.5).toFixed(2);
-
-        let rec = parseFloat(change) > 2 ? "🚀 STRONG BUY" : (parseFloat(change) > 0.5 ? "📈 BUY" : "📉 HOLD");
-
-        pred.innerHTML = `
-          <p><strong>BTC now:</strong> $${price.toLocaleString()}</p>
-          <p><strong>4h Forecast:</strong> <span style="color:${change > 0 ? '#6b21a8' : '#9f1239'}">${change > 0 ? '+' : ''}${change}%</span></p>
-          <p><strong>Recommendation:</strong> ${rec}</p>
-        `;
-
-        predictions.unshift({ time: new Date().toLocaleTimeString('en-US'), price: price.toLocaleString(), change: parseFloat(change), rec });
-        if (predictions.length > 10) predictions.pop();
-        localStorage.setItem('agentPredictions', JSON.stringify(predictions));
-        renderHistory();
-      } catch {
-        pred.innerHTML = `<p>⚠️ Failed to fetch price</p>`;
+    function send() {
+      const addr = document.getElementById('addr').value;
+      const sum = document.getElementById('sum').value;
+      if (addr && sum) {
+        alert(`Команда:\nsend ${addr} ${sum}\n\nСкопировано в буфер`);
+        navigator.clipboard.writeText(`send ${addr} ${sum}`);
+      } else {
+        alert("Заполни оба поля");
       }
     }
-
-    window.onload = () => {
-      renderHistory();
-      makePrediction();
-    };
   </script>
 </body>
 </html>
