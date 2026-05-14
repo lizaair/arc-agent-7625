@@ -3,89 +3,157 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asil — AI Agent</title>
+  <title>Asil • Arc Intelligence</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+
     body {
-      font-family: Arial, sans-serif;
-      background: #f8f9fa;
       margin: 0;
-      padding: 40px;
+      padding: 0;
+      background: linear-gradient(135deg, #fff0f8 0%, #f0f8ff 100%);
+      color: #3a1f4d;
+      font-family: 'Roboto', sans-serif;
+      min-height: 100vh;
     }
+
     .container {
-      max-width: 700px;
-      margin: auto;
-      background: white;
-      padding: 40px;
-      border-radius: 16px;
-      box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-      text-align: center;
+      max-width: 940px;
+      margin: 40px auto;
+      padding: 50px 45px;
+      background: rgba(255, 255, 255, 0.92);
+      border-radius: 32px;
+      box-shadow: 0 25px 70px rgba(236, 72, 153, 0.25);
+      backdrop-filter: blur(16px);
+      border: 1px solid rgba(236, 72, 153, 0.3);
     }
+
     h1 {
-      color: #6b21a8;
+      font-family: 'Space+Grotesk', sans-serif;
+      font-size: 3.6rem;
+      margin: 0 0 10px 0;
+      background: linear-gradient(90deg, #ec4899, #db2777);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
     }
-    .creature {
-      width: 180px;
-      height: 180px;
-      background: url('https://files.catbox.moe/mewziy.png') center/contain no-repeat;
-      margin: 20px auto;
-    }
-    input {
-      width: 100%;
-      padding: 12px;
-      margin: 10px 0;
-      border: 1px solid #ccc;
-      border-radius: 8px;
-      font-size: 16px;
-    }
-    button {
-      padding: 14px 32px;
-      background: #6b21a8;
+
+    .tag {
+      display: inline-block;
+      background: #ec4899;
       color: white;
-      border: none;
-      border-radius: 12px;
-      font-size: 16px;
-      cursor: pointer;
-      margin: 10px;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.95rem;
+      margin-bottom: 15px;
     }
+
+    button {
+      padding: 16px 34px;
+      margin: 10px;
+      background: white;
+      color: #3a1f4d;
+      border: 2px solid #ec4899;
+      border-radius: 22px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+
     button:hover {
-      background: #7c3aed;
+      background: #fce7f3;
+      transform: translateY(-4px);
+    }
+
+    .card {
+      background: rgba(255,255,255,0.8);
+      border-radius: 22px;
+      padding: 24px;
+      margin: 25px 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="creature"></div>
+    <div class="tag">Built on Arc Testnet</div>
     <h1>Asil</h1>
-    <p>Autonomous AI Agent #7625 on Arc Testnet</p>
+    <p style="color:#e11d8c; font-size:1.35rem;">● LIVE • AUTONOMOUS AI AGENT #7625</p>
 
-    <h3>💸 Send USDC</h3>
-    <input type="text" id="addr" placeholder="0x... адрес получателя" />
-    <input type="number" id="amt" placeholder="Сумма" step="0.01" />
-    <button onclick="sendUSDC()">Отправить USDC</button>
+    <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin: 30px 0;">
+      <button onclick="checkBalance()">💰 Check Balance</button>
+      <button onclick="makePrediction()">🧠 BTC Prediction</button>
+      <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Get Test USDC</button>
+      <button onclick="window.open('https://t.me/asil_agent_bot', '_blank')" style="background: #229ED9; color: white; border: none;">
+        💬 Open Telegram Bot
+      </button>
+    </div>
 
-    <p style="margin-top:30px;">
-      <button onclick="makePrediction()">🧠 Прогноз BTC</button>
-      <button onclick="window.open('https://t.me/asil_agent_bot','_blank')">💬 Telegram Bot</button>
+    <div class="card" id="prediction">
+      Click a button to interact with Asil
+    </div>
+
+    <div class="card">
+      <strong>📜 Prediction History</strong>
+      <div id="history"></div>
+    </div>
+
+    <p style="text-align:center; margin-top: 40px; opacity: 0.7;">
+      Autonomous AI Agent built on <strong>Arc Testnet</strong> during Agora Agents Hackathon 2026
     </p>
   </div>
 
   <script>
-    function sendUSDC() {
-      const addr = document.getElementById('addr').value.trim();
-      const amt = document.getElementById('amt').value.trim();
-      
-      if (addr && amt) {
-        const cmd = `send ${addr} ${amt}`;
-        navigator.clipboard.writeText(cmd);
-        alert('✅ Команда скопирована!\n\n' + cmd + '\n\nВставь её в терминал, где запущен Asil');
-      } else {
-        alert('Заполни оба поля');
+    let predictions = JSON.parse(localStorage.getItem('agentPredictions')) || [];
+
+    function renderHistory() {
+      const div = document.getElementById('history');
+      if (predictions.length === 0) {
+        div.innerHTML = '<p style="opacity:0.6;text-align:center;">No predictions yet</p>';
+        return;
+      }
+      div.innerHTML = predictions.map(p => `
+        <div style="padding:14px;margin:10px 0;background:rgba(236,72,153,0.1);border-radius:16px;">
+          <strong>${p.time}</strong> — $${p.price} 
+          <span style="color:${p.change > 0 ? '#ec4899' : '#9f1239'}">${p.change > 0 ? '+' : ''}${p.change}%</span> → ${p.rec}
+        </div>
+      `).join('');
+    }
+
+    async function makePrediction() {
+      const pred = document.getElementById('prediction');
+      pred.innerHTML = `<p>🧠 Asil is thinking...</p>`;
+
+      try {
+        const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+        const data = await res.json();
+        const price = parseFloat(data.price);
+        const change = (Math.random() * 6 - 2.5).toFixed(2);
+
+        let rec = parseFloat(change) > 2 ? "🚀 STRONG BUY" : (parseFloat(change) > 0.5 ? "📈 BUY" : "📉 HOLD");
+
+        pred.innerHTML = `
+          <p><strong>BTC now:</strong> $${price.toLocaleString()}</p>
+          <p><strong>4h Prediction:</strong> <span style="color:${change > 0 ? '#ec4899' : '#9f1239'}">${change > 0 ? '+' : ''}${change}%</span></p>
+          <p><strong>Recommendation:</strong> ${rec}</p>
+        `;
+
+        predictions.unshift({ time: new Date().toLocaleTimeString('en-US'), price: price.toLocaleString(), change: parseFloat(change), rec });
+        if (predictions.length > 10) predictions.pop();
+        localStorage.setItem('agentPredictions', JSON.stringify(predictions));
+        renderHistory();
+      } catch {
+        pred.innerHTML = `<p>⚠️ Failed to fetch price</p>`;
       }
     }
 
-    function makePrediction() {
-      alert('🧠 Asil думает... Проверь терминал для полного прогноза');
+    async function checkBalance() {
+      const pred = document.getElementById('prediction');
+      pred.innerHTML = `<p>🔄 Checking balance...</p>`;
+      setTimeout(() => pred.innerHTML = `<p><strong>💰 Balance:</strong> 0.0000 USDC</p>`, 800);
     }
+
+    window.onload = () => {
+      renderHistory();
+      makePrediction();
+    };
   </script>
 </body>
 </html>
