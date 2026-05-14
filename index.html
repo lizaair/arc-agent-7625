@@ -3,101 +3,111 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asil • Arc Intelligence</title>
+  <title>Asil — Autonomous AI Agent</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
 
     body {
       margin: 0;
       padding: 0;
-      background: linear-gradient(135deg, #fff0f8 0%, #f0f8ff 100%);
-      color: #3a1f4d;
-      font-family: 'Roboto', sans-serif;
-      min-height: 100vh;
+      background: #ffffff;
+      color: #1f1f1f;
+      font-family: 'Inter', system-ui, sans-serif;
     }
 
     .container {
-      max-width: 940px;
-      margin: 40px auto;
-      padding: 50px 45px;
-      background: rgba(255, 255, 255, 0.92);
-      border-radius: 32px;
-      box-shadow: 0 25px 70px rgba(236, 72, 153, 0.25);
-      backdrop-filter: blur(16px);
-      border: 1px solid rgba(236, 72, 153, 0.3);
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 40px 60px;
+    }
+
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 50px;
+      margin-bottom: 50px;
+    }
+
+    .creature {
+      width: 230px;
+      height: 230px;
+      background: url('https://files.catbox.moe/mewziy.png') center/contain no-repeat;
+      flex-shrink: 0;
+      filter: drop-shadow(0 20px 35px rgba(0,0,0,0.18));
     }
 
     h1 {
       font-family: 'Space+Grotesk', sans-serif;
-      font-size: 3.6rem;
-      margin: 0 0 10px 0;
-      background: linear-gradient(90deg, #ec4899, #db2777);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
+      font-size: 3.4rem;
+      margin: 0 0 12px 0;
+      font-weight: 700;
     }
 
     .tag {
       display: inline-block;
-      background: #ec4899;
+      background: #6b21a8;
       color: white;
-      padding: 6px 16px;
-      border-radius: 30px;
+      padding: 6px 18px;
+      border-radius: 9999px;
       font-size: 0.95rem;
-      margin-bottom: 15px;
+      font-weight: 500;
     }
 
     button {
-      padding: 16px 34px;
-      margin: 10px;
-      background: white;
-      color: #3a1f4d;
-      border: 2px solid #ec4899;
-      border-radius: 22px;
+      padding: 16px 36px;
+      background: #6b21a8;
+      color: white;
+      border: none;
+      border-radius: 9999px;
       font-weight: 600;
       cursor: pointer;
       transition: all 0.3s;
+      margin: 8px 4px;
     }
 
     button:hover {
-      background: #fce7f3;
-      transform: translateY(-4px);
+      background: #7c3aed;
+      transform: translateY(-3px);
     }
 
     .card {
-      background: rgba(255,255,255,0.8);
-      border-radius: 22px;
-      padding: 24px;
-      margin: 25px 0;
+      background: #f8f9fa;
+      border-radius: 20px;
+      padding: 28px;
+      margin: 30px 0;
     }
   </style>
 </head>
 <body>
   <div class="container">
-    <div class="tag">Built on Arc Testnet</div>
-    <h1>Asil</h1>
-    <p style="color:#e11d8c; font-size:1.35rem;">● LIVE • AUTONOMOUS AI AGENT #7625</p>
+    <div class="header">
+      <div class="creature"></div>
+      <div>
+        <div class="tag">Built on Arc Testnet</div>
+        <h1>Asil</h1>
+        <p style="font-size:1.3rem; opacity:0.9;">
+          Autonomous AI Agent #7625
+        </p>
+        <p style="max-width:520px; margin-top:12px; line-height:1.5;">
+          Intelligent agent living on Arc. Making predictions, learning, and interacting with the world.
+        </p>
+      </div>
+    </div>
 
-    <div style="display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin: 30px 0;">
-      <button onclick="checkBalance()">💰 Check Balance</button>
+    <div style="display: flex; gap: 14px; flex-wrap: wrap;">
       <button onclick="makePrediction()">🧠 BTC Prediction</button>
+      <button onclick="window.open('https://t.me/asil_agent_bot', '_blank')">💬 Telegram Bot</button>
       <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Get Test USDC</button>
-      <button onclick="window.open('https://t.me/asil_agent_bot', '_blank')" style="background: #229ED9; color: white; border: none;">
-        💬 Open Telegram Bot
-      </button>
     </div>
 
     <div class="card" id="prediction">
-      Click a button to interact with Asil
+      Click "BTC Prediction" to see Asil work
     </div>
 
     <div class="card">
-      <strong>📜 Prediction History</strong>
+      <strong>Prediction History</strong>
       <div id="history"></div>
     </div>
-
-    <p style="text-align:center; margin-top: 40px; opacity: 0.7;">
-      Autonomous AI Agent built on <strong>Arc Testnet</strong> during Agora Agents Hackathon 2026
-    </p>
   </div>
 
   <script>
@@ -106,13 +116,13 @@
     function renderHistory() {
       const div = document.getElementById('history');
       if (predictions.length === 0) {
-        div.innerHTML = '<p style="opacity:0.6;text-align:center;">No predictions yet</p>';
+        div.innerHTML = '<p style="opacity:0.6;">No predictions yet</p>';
         return;
       }
       div.innerHTML = predictions.map(p => `
-        <div style="padding:14px;margin:10px 0;background:rgba(236,72,153,0.1);border-radius:16px;">
+        <div style="padding:16px;margin:12px 0;background:white;border-radius:16px;border-left:4px solid #6b21a8;">
           <strong>${p.time}</strong> — $${p.price} 
-          <span style="color:${p.change > 0 ? '#ec4899' : '#9f1239'}">${p.change > 0 ? '+' : ''}${p.change}%</span> → ${p.rec}
+          <span style="color:${p.change > 0 ? '#6b21a8' : '#9f1239'}">${p.change > 0 ? '+' : ''}${p.change}%</span> → ${p.rec}
         </div>
       `).join('');
     }
@@ -131,7 +141,7 @@
 
         pred.innerHTML = `
           <p><strong>BTC now:</strong> $${price.toLocaleString()}</p>
-          <p><strong>4h Prediction:</strong> <span style="color:${change > 0 ? '#ec4899' : '#9f1239'}">${change > 0 ? '+' : ''}${change}%</span></p>
+          <p><strong>4h Forecast:</strong> <span style="color:${change > 0 ? '#6b21a8' : '#9f1239'}">${change > 0 ? '+' : ''}${change}%</span></p>
           <p><strong>Recommendation:</strong> ${rec}</p>
         `;
 
@@ -142,12 +152,6 @@
       } catch {
         pred.innerHTML = `<p>⚠️ Failed to fetch price</p>`;
       }
-    }
-
-    async function checkBalance() {
-      const pred = document.getElementById('prediction');
-      pred.innerHTML = `<p>🔄 Checking balance...</p>`;
-      setTimeout(() => pred.innerHTML = `<p><strong>💰 Balance:</strong> 0.0000 USDC</p>`, 800);
     }
 
     window.onload = () => {
