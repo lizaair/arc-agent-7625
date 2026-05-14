@@ -53,20 +53,11 @@
       font-weight: 500;
     }
 
-    .send-form {
-      background: #f8f9fa;
-      border-radius: 20px;
-      padding: 30px;
-      margin: 30px 0;
-    }
-
-    input {
-      width: 100%;
-      padding: 14px;
-      margin: 10px 0;
-      border: 1px solid #ddd;
-      border-radius: 12px;
-      font-size: 1rem;
+    .buttons {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+      margin: 40px 0;
     }
 
     button {
@@ -77,11 +68,19 @@
       border-radius: 9999px;
       font-weight: 600;
       cursor: pointer;
-      margin: 10px 5px;
+      transition: all 0.3s;
     }
 
     button:hover {
       background: #7c3aed;
+      transform: translateY(-3px);
+    }
+
+    .card {
+      background: #f8f9fa;
+      border-radius: 20px;
+      padding: 28px;
+      margin: 30px 0;
     }
   </style>
 </head>
@@ -101,17 +100,10 @@
       </div>
     </div>
 
-    <div class="send-form">
-      <h3>💸 Send USDC</h3>
-      <input type="text" id="toAddress" placeholder="Recipient Address (0x...)" />
-      <input type="number" id="amount" placeholder="Amount (e.g. 0.5)" step="0.01" />
-      <button onclick="sendUSDC()">Send USDC</button>
-    </div>
-
-    <div style="display: flex; gap: 14px; flex-wrap: wrap;">
+    <div class="buttons">
       <button onclick="makePrediction()">🧠 BTC Prediction</button>
       <button onclick="window.open('https://t.me/asil_agent_bot', '_blank')">💬 Telegram Bot</button>
-      <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Get Test USDC</button>
+      <button onclick="window.open('https://faucet.circle.com/?address=0xb32380d13dec593f6afd3e23af397f3c7e5a0639&blockchain=arc-testnet&token=USDC', '_blank')">🚰 Get Test USDC</button>
     </div>
 
     <div class="card" id="prediction">
@@ -122,22 +114,13 @@
       <strong>Prediction History</strong>
       <div id="history"></div>
     </div>
+
+    <p style="text-align:center; margin-top:80px; opacity:0.7;">
+      Built during Agora Agents Hackathon 2026 on Arc Testnet
+    </p>
   </div>
 
   <script>
-    function sendUSDC() {
-      const toAddress = document.getElementById('toAddress').value.trim();
-      const amount = document.getElementById('amount').value.trim();
-
-      if (!toAddress || !amount) {
-        alert("Please fill in both address and amount");
-        return;
-      }
-
-      alert(`💸 Command for Asil:\n\nsend ${toAddress} ${amount}\n\nCopy this command and paste it in the terminal where Asil is running.`);
-    }
-
-    // Остальной скрипт (прогнозы и история)
     let predictions = JSON.parse(localStorage.getItem('agentPredictions')) || [];
 
     function renderHistory() {
