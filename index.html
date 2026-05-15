@@ -6,8 +6,7 @@
   <title>Asil — Agent #7625</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
-    
-    body { margin:0; padding:0; background:#ffffff; font-family:'Inter', sans-serif; }
+    body { margin:0; padding:0; background:#f8f9fc; font-family:'Inter', sans-serif; }
     .container { max-width:1000px; margin:40px auto; padding:0 60px; }
     .header { display:flex; align-items:center; gap:50px; margin-bottom:40px; }
     .creature { width:230px; height:230px; background:url('https://files.catbox.moe/mewziy.png') center/contain no-repeat; filter:drop-shadow(0 25px 45px rgba(107,33,168,0.25)); }
@@ -22,8 +21,10 @@
     button { padding:18px 36px; background:#6b21a8; color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer; }
     button:hover { background:#7c3aed; transform:translateY(-3px); }
 
-    input { padding:18px 22px; margin:12px 0; border:1px solid #ddd; border-radius:18px; width:100%; font-size:1.05rem; }
+    input { padding:18px 22px; margin:12px 0; border:1px solid #ddd; border-radius:18px; width:100%; }
     .history-item { padding:18px; background:#f8f9fa; border-radius:18px; margin:10px 0; }
+    .positive { color:#10b981; font-weight:700; }
+    .negative { color:#ef4444; font-weight:700; }
   </style>
 </head>
 <body>
@@ -31,7 +32,7 @@
     <div class="header">
       <div class="creature"></div>
       <div>
-        <div class="tag">Built on Arc Testnet</div>
+        <div class="tag">Arc Testnet</div>
         <h1>Asil</h1>
         <p style="font-size:1.4rem; opacity:0.9;">Autonomous AI Agent #7625</p>
       </div>
@@ -47,7 +48,7 @@
     <!-- BTC Price -->
     <div class="tab-content" id="tab0">
       <button onclick="makePrediction()">Get BTC Price & Forecast</button>
-      <div class="card" id="prediction">Press button to start</div>
+      <div class="card" id="prediction" style="font-size:1.3rem;">Press button</div>
       <h3>Prediction History</h3>
       <div class="card" id="predHistory"></div>
     </div>
@@ -63,14 +64,14 @@
       </div>
     </div>
 
-    <!-- Send USDC - красивее -->
+    <!-- Send USDC -->
     <div class="tab-content" id="tab2" style="display:none;">
       <div class="card">
-        <h3>💸 Send USDC on Arc Testnet</h3>
+        <h3>💸 Send USDC</h3>
         <input type="text" id="recipient" placeholder="Recipient Address (0x...)">
         <input type="number" id="amount" step="0.01" placeholder="Amount USDC">
-        <button onclick="sendTokens()" style="width:100%; margin-top:20px; padding:20px; font-size:1.1rem;">Confirm Send</button>
-        <div id="sendStatus" style="margin-top:20px; font-weight:500; min-height:30px;"></div>
+        <button onclick="sendTokens()" style="width:100%; margin-top:20px;">Send USDC</button>
+        <div id="sendStatus" style="margin-top:20px; min-height:30px;"></div>
       </div>
       <h3>Send History</h3>
       <div class="card" id="sendHistory"></div>
@@ -106,7 +107,8 @@
         const data = await res.json();
         const price = parseFloat(data.price).toLocaleString();
         const change = (Math.random() * 8 - 3.5).toFixed(2);
-        const text = `BTC: $${price} | 4h Forecast: ${change > 0 ? '+' : ''}${change}%`;
+        const isPositive = change > 0;
+        const text = `BTC: $${price} | 4h: <span style="color:${isPositive ? '#10b981' : '#ef4444'}">${isPositive ? '+' : ''}${change}%</span>`;
         el.innerHTML = text;
         predictions.unshift(text + " • " + new Date().toLocaleTimeString('en-US'));
         if (predictions.length > 12) predictions.pop();
@@ -120,13 +122,13 @@
       const recipient = document.getElementById('recipient').value;
       const status = document.getElementById('sendStatus');
 
-      if (!amount || !recipient) return status.innerHTML = `<span style="color:red;">Please fill all fields</span>`;
+      if (!amount || !recipient) return status.innerHTML = "Please fill all fields";
 
       status.innerHTML = "Sending...";
       setTimeout(() => {
-        const msg = `✅ Successfully sent ${amount} USDC`;
+        const msg = `✅ Sent ${amount} USDC • ${new Date().toLocaleTimeString('en-US')}`;
         status.innerHTML = msg;
-        sends.unshift(msg + " • " + new Date().toLocaleTimeString('en-US'));
+        sends.unshift(msg);
         if (sends.length > 10) sends.pop();
         localStorage.setItem('sends', JSON.stringify(sends));
         renderHistories();
