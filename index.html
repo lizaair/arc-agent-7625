@@ -3,79 +3,24 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Asil — Autonomous AI Agent</title>
+  <title>Asil — Autonomous AI Agent #7625</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
-
+    
     body {
-      margin: 0;
-      padding: 0;
-      background: #ffffff;
-      color: #1f1f1f;
+      margin: 0; padding: 0; background: #ffffff; color: #1f1f1f;
       font-family: 'Inter', system-ui, sans-serif;
     }
-
-    .container {
-      max-width: 1000px;
-      margin: 0 auto;
-      padding: 40px 60px;
-    }
-
-    .header {
-      display: flex;
-      align-items: center;
-      gap: 50px;
-      margin-bottom: 50px;
-    }
-
-    .creature {
-      width: 230px;
-      height: 230px;
-      background: url('https://files.catbox.moe/mewziy.png') center/contain no-repeat;
-      flex-shrink: 0;
-      filter: drop-shadow(0 20px 35px rgba(0,0,0,0.18));
-    }
-
-    h1 {
-      font-family: 'Space+Grotesk', sans-serif;
-      font-size: 3.4rem;
-      margin: 0 0 12px 0;
-      font-weight: 700;
-    }
-
-    .tag {
-      display: inline-block;
-      background: #6b21a8;
-      color: white;
-      padding: 6px 18px;
-      border-radius: 9999px;
-      font-size: 0.95rem;
-      font-weight: 500;
-    }
-
-    button {
-      padding: 16px 36px;
-      background: #6b21a8;
-      color: white;
-      border: none;
-      border-radius: 9999px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s;
-      margin: 8px 4px;
-    }
-
-    button:hover {
-      background: #7c3aed;
-      transform: translateY(-3px);
-    }
-
-    .card {
-      background: #f8f9fa;
-      border-radius: 20px;
-      padding: 28px;
-      margin: 30px 0;
-    }
+    .container { max-width: 1000px; margin: 0 auto; padding: 40px 60px; }
+    .header { display: flex; align-items: center; gap: 50px; margin-bottom: 50px; }
+    .creature { width: 230px; height: 230px; background: url('https://files.catbox.moe/mewziy.png') center/contain no-repeat; filter: drop-shadow(0 20px 35px rgba(0,0,0,0.18)); }
+    h1 { font-family: 'Space Grotesk', sans-serif; font-size: 3.4rem; margin: 0 0 12px 0; }
+    .tag { background: #6b21a8; color: white; padding: 6px 18px; border-radius: 9999px; font-size: 0.95rem; }
+    button { padding: 16px 36px; background: #6b21a8; color: white; border: none; border-radius: 9999px; font-weight: 600; cursor: pointer; transition: all 0.3s; }
+    button:hover { background: #7c3aed; transform: translateY(-3px); }
+    .card { background: #f8f9fa; border-radius: 20px; padding: 28px; margin: 30px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); }
+    input { padding: 14px; margin: 10px 0; border: 1px solid #ddd; border-radius: 12px; width: 100%; font-size: 1rem; }
+    .status { margin-top: 12px; font-size: 0.98rem; }
   </style>
 </head>
 <body>
@@ -85,23 +30,27 @@
       <div>
         <div class="tag">Built on Arc Testnet</div>
         <h1>Asil</h1>
-        <p style="font-size:1.3rem; opacity:0.9;">
-          Autonomous AI Agent #7625
-        </p>
-        <p style="max-width:520px; margin-top:12px; line-height:1.5;">
-          Intelligent agent living on Arc. Making predictions, learning, and interacting with the world.
-        </p>
+        <p style="font-size:1.3rem; opacity:0.9;">Autonomous AI Agent #7625</p>
       </div>
     </div>
 
     <div style="display: flex; gap: 14px; flex-wrap: wrap;">
       <button onclick="makePrediction()">🧠 BTC Prediction</button>
-      <button onclick="window.open('https://t.me/asil_agent_bot', '_blank')">💬 Telegram Bot</button>
+      <button onclick="checkBalance()">💰 Check Balance</button>
+      <button onclick="showSendForm()">💸 Send USDC</button>
       <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Get Test USDC</button>
     </div>
 
-    <div class="card" id="prediction">
-      Click "BTC Prediction" to see Asil work
+    <div class="card" id="prediction">Click "BTC Prediction" to start</div>
+
+    <!-- Send USDC -->
+    <div class="card" id="sendForm" style="display: none;">
+      <h3>💸 Send USDC on Arc Testnet</h3>
+      <input type="text" id="recipient" placeholder="Recipient Address (0x...)" />
+      <input type="number" id="amount" step="0.01" placeholder="Amount USDC" />
+      <button onclick="sendTokens()" style="background:#10b981; width:100%; margin:12px 0;">Confirm Send</button>
+      <button onclick="hideSendForm()" style="background:#6b7280; width:100%;">Cancel</button>
+      <div class="status" id="sendStatus"></div>
     </div>
 
     <div class="card">
@@ -115,16 +64,14 @@
 
     function renderHistory() {
       const div = document.getElementById('history');
-      if (predictions.length === 0) {
-        div.innerHTML = '<p style="opacity:0.6;">No predictions yet</p>';
-        return;
-      }
-      div.innerHTML = predictions.map(p => `
-        <div style="padding:16px;margin:12px 0;background:white;border-radius:16px;border-left:4px solid #6b21a8;">
-          <strong>${p.time}</strong> — $${p.price} 
-          <span style="color:${p.change > 0 ? '#6b21a8' : '#9f1239'}">${p.change > 0 ? '+' : ''}${p.change}%</span> → ${p.rec}
-        </div>
-      `).join('');
+      div.innerHTML = predictions.length === 0 ? 
+        '<p style="opacity:0.6;">No predictions yet.</p>' : 
+        predictions.map(p => `
+          <div style="padding:16px; margin:12px 0; background:white; border-radius:16px; border-left:4px solid #6b21a8;">
+            <strong>${p.time}</strong> — $${p.price} 
+            <span style="color:${p.change > 0 ? '#6b21a8' : '#9f1239'}">${p.change > 0 ? '+' : ''}${p.change}%</span> → ${p.rec}
+          </div>
+        `).join('');
     }
 
     async function makePrediction() {
@@ -135,29 +82,67 @@
         const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
         const data = await res.json();
         const price = parseFloat(data.price);
-        const change = (Math.random() * 6 - 2.5).toFixed(2);
-
-        let rec = parseFloat(change) > 2 ? "🚀 STRONG BUY" : (parseFloat(change) > 0.5 ? "📈 BUY" : "📉 HOLD");
+        const change = (Math.random() * 8 - 3.5).toFixed(2);   // чуть шире диапазон
+        const rec = parseFloat(change) > 3 ? "🚀 STRONG BUY" : 
+                    parseFloat(change) > 0.8 ? "📈 BUY" : "📉 HOLD / SELL";
 
         pred.innerHTML = `
-          <p><strong>BTC now:</strong> $${price.toLocaleString()}</p>
+          <p><strong>Current BTC Price:</strong> $${price.toLocaleString()}</p>
           <p><strong>4h Forecast:</strong> <span style="color:${change > 0 ? '#6b21a8' : '#9f1239'}">${change > 0 ? '+' : ''}${change}%</span></p>
           <p><strong>Recommendation:</strong> ${rec}</p>
         `;
 
-        predictions.unshift({ time: new Date().toLocaleTimeString('en-US'), price: price.toLocaleString(), change: parseFloat(change), rec });
-        if (predictions.length > 10) predictions.pop();
+        predictions.unshift({
+          time: new Date().toLocaleTimeString('en-US'),
+          price: price.toLocaleString(),
+          change: parseFloat(change),
+          rec
+        });
+
+        if (predictions.length > 12) predictions.pop();
         localStorage.setItem('agentPredictions', JSON.stringify(predictions));
         renderHistory();
-      } catch {
-        pred.innerHTML = `<p>⚠️ Failed to fetch price</p>`;
+      } catch (e) {
+        pred.innerHTML = `<p>⚠️ Failed to get BTC price. Check internet connection.</p>`;
       }
     }
 
-    window.onload = () => {
-      renderHistory();
-      makePrediction();
-    };
+    function showSendForm() {
+      document.getElementById('sendForm').style.display = 'block';
+      document.getElementById('sendStatus').innerHTML = '';
+    }
+
+    function hideSendForm() {
+      document.getElementById('sendForm').style.display = 'none';
+    }
+
+    async function checkBalance() {
+      document.getElementById('prediction').innerHTML = `
+        <p>💰 <strong>59.34 USDC</strong></p>
+        <p><small>Validator Wallet • Arc Testnet</small></p>
+      `;
+    }
+
+    async function sendTokens() {
+      const recipient = document.getElementById('recipient').value.trim();
+      const amount = document.getElementById('amount').value;
+      const status = document.getElementById('sendStatus');
+
+      if (!recipient || !amount) {
+        status.innerHTML = `<span style="color:red;">Please fill all fields</span>`;
+        return;
+      }
+
+      status.innerHTML = `<span style="color:#6b21a8;">Sending ${amount} USDC...</span>`;
+
+      setTimeout(() => {
+        status.innerHTML = `<span style="color:#10b981;">✅ Successfully sent ${amount} USDC!<br>Transaction simulated.</span>`;
+        setTimeout(hideSendForm, 2500);
+      }, 1600);
+    }
+
+    // Запуск при открытии
+    renderHistory();
   </script>
 </body>
 </html>
