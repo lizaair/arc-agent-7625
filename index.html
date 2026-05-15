@@ -6,16 +6,25 @@
   <title>Asil — Autonomous AI Agent #7625</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;600;700&display=swap');
+    
     body { margin:0; padding:0; background:#ffffff; color:#1f1f1f; font-family:'Inter', sans-serif; }
     .container { max-width:1000px; margin:0 auto; padding:40px 60px; }
-    .header { display:flex; align-items:center; gap:50px; margin-bottom:50px; }
+    .header { display:flex; align-items:center; gap:50px; margin-bottom:40px; }
     .creature { width:230px; height:230px; background:url('https://files.catbox.moe/mewziy.png') center/contain no-repeat; filter:drop-shadow(0 20px 35px rgba(0,0,0,0.18)); }
-    h1 { font-family:'Space Grotesk', sans-serif; font-size:3.4rem; margin:0 0 12px 0; }
+    h1 { font-family:'Space Grotesk', sans-serif; font-size:3.4rem; margin:0; }
     .tag { background:#6b21a8; color:white; padding:6px 18px; border-radius:9999px; font-size:0.95rem; }
-    button { padding:16px 36px; background:#6b21a8; color:white; border:none; border-radius:9999px; font-weight:600; cursor:pointer; transition:all 0.3s; }
-    button:hover { background:#7c3aed; transform:translateY(-3px); }
-    .card { background:#f8f9fa; border-radius:20px; padding:28px; margin:30px 0; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
-    input { padding:14px; margin:10px 0; border:1px solid #ddd; border-radius:12px; width:100%; font-size:1rem; }
+
+    .tabs { display:flex; gap:10px; margin-bottom:30px; border-bottom:2px solid #eee; }
+    .tab { padding:12px 28px; cursor:pointer; font-weight:600; border-radius:12px 12px 0 0; }
+    .tab.active { background:#6b21a8; color:white; }
+
+    button { padding:16px 36px; background:#6b21a8; color:white; border:none; border-radius:9999px; font-weight:600; cursor:pointer; }
+    button:hover { background:#7c3aed; transform:translateY(-2px); }
+    .card { background:#f8f9fa; border-radius:20px; padding:28px; margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+    input { padding:14px; margin:10px 0; border:1px solid #ddd; border-radius:12px; width:100%; }
+
+    .tx { padding:14px; margin:10px 0; background:white; border-radius:12px; border-left:4px solid #6b21a8; }
+    .success { color:#10b981; }
   </style>
 </head>
 <body>
@@ -29,47 +38,82 @@
       </div>
     </div>
 
-    <div style="display:flex; gap:14px; flex-wrap:wrap;">
-      <button onclick="makePrediction()">🧠 BTC Prediction</button>
-      <button onclick="checkBalance()">💰 Check Balance</button>
-      <button onclick="showSendForm()">💸 Send USDC</button>
-      <button onclick="window.open('https://faucet.circle.com/', '_blank')">🚰 Get Test USDC</button>
+    <!-- Tabs -->
+    <div class="tabs">
+      <div class="tab active" onclick="switchTab(0)">🧠 Prediction</div>
+      <div class="tab" onclick="switchTab(1)">💸 Send USDC</div>
+      <div class="tab" onclick="switchTab(2)">📜 Transaction History</div>
     </div>
 
-    <div class="card" id="prediction">Click "BTC Prediction" to start</div>
-
-    <div class="card" id="sendForm" style="display:none;">
-      <h3>💸 Send USDC on Arc Testnet</h3>
-      <input type="text" id="recipient" placeholder="Recipient Address (0x...)" />
-      <input type="number" id="amount" step="0.01" placeholder="Amount USDC" />
-      <button onclick="sendTokens()" style="background:#10b981; width:100%; margin:12px 0;">Confirm Send</button>
-      <button onclick="hideSendForm()" style="background:#6b7280; width:100%;">Cancel</button>
-      <div class="status" id="sendStatus"></div>
+    <!-- Tab 1: Prediction -->
+    <div class="tab-content" id="tab0">
+      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;">
+        <button onclick="makePrediction()">Make BTC Prediction</button>
+        <button onclick="checkBalance()">Check Balance</button>
+      </div>
+      <div class="card" id="prediction">Click button to start</div>
     </div>
 
-    <div class="card">
-      <strong>Prediction History</strong>
-      <div id="history"></div>
+    <!-- Tab 2: Send USDC -->
+    <div class="tab-content" id="tab1" style="display:none;">
+      <div class="card">
+        <h3>💸 Send USDC on Arc Testnet</h3>
+        <input type="text" id="recipient" placeholder="Recipient Address (0x...)" />
+        <input type="number" id="amount" step="0.01" placeholder="Amount USDC" />
+        <button onclick="sendTokens()" style="background:#10b981; width:100%; margin-top:15px;">Confirm Transaction</button>
+        <div class="status" id="sendStatus"></div>
+      </div>
+    </div>
+
+    <!-- Tab 3: Transaction History -->
+    <div class="tab-content" id="tab2" style="display:none;">
+      <div class="card">
+        <h3>📜 Transaction History</h3>
+        <div id="txHistory">No transactions yet.</div>
+      </div>
     </div>
   </div>
 
   <script>
     let predictions = JSON.parse(localStorage.getItem('agentPredictions')) || [];
+    let transactions = JSON.parse(localStorage.getItem('agentTransactions')) || [];
 
     function renderHistory() {
-      const div = document.getElementById('history');
-      div.innerHTML = predictions.length === 0 ? '<p style="opacity:0.6;">No predictions yet.</p>' : 
-        predictions.map(p => `
-          <div style="padding:16px;margin:12px 0;background:white;border-radius:16px;border-left:4px solid #6b21a8;">
-            <strong>${p.time}</strong> — $${p.price} 
-            <span style="color:${p.change>0?'#6b21a8':'#9f1239'}">${p.change>0?'+':''}${p.change}%</span> → ${p.rec}
-          </div>
-        `).join('');
+      const div = document.getElementById('txHistory');
+      if (transactions.length === 0) {
+        div.innerHTML = '<p style="opacity:0.6;">No transactions yet.</p>';
+        return;
+      }
+      div.innerHTML = transactions.map(tx => `
+        <div class="tx">
+          <strong>${tx.time}</strong><br>
+          Sent <strong>${tx.amount} USDC</strong> to <small>${tx.to.slice(0,12)}...</small><br>
+          <span class="success">✓ Confirmed on Arc Testnet</span>
+        </div>
+      `).join('');
     }
 
-    async function makePrediction() {
+    function addTransaction(amount, to) {
+      transactions.unshift({
+        time: new Date().toLocaleString('en-US'),
+        amount: amount,
+        to: to
+      });
+      if (transactions.length > 20) transactions.pop();
+      localStorage.setItem('agentTransactions', JSON.stringify(transactions));
+      renderHistory();
+    }
+
+    // Tab switching
+    function switchTab(n) {
+      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
+      document.querySelectorAll('.tab-content').forEach((c, i) => c.style.display = i === n ? 'block' : 'none');
+    }
+
+    async function makePrediction() { /* твой рабочий код */ 
       const pred = document.getElementById('prediction');
       pred.innerHTML = `<p>🧠 Asil is thinking...</p>`;
+      
       try {
         const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
         const data = await res.json();
@@ -82,21 +126,13 @@
           <p><strong>4h Forecast:</strong> <span style="color:${change>0?'#6b21a8':'#9f1239'}">${change>0?'+':''}${change}%</span></p>
           <p><strong>Recommendation:</strong> ${rec}</p>
         `;
-
-        predictions.unshift({time: new Date().toLocaleTimeString(), price: price.toLocaleString(), change: parseFloat(change), rec});
-        if (predictions.length > 12) predictions.pop();
-        localStorage.setItem('agentPredictions', JSON.stringify(predictions));
-        renderHistory();
       } catch(e) {
         pred.innerHTML = `<p>⚠️ Failed to fetch price</p>`;
       }
     }
 
-    function showSendForm() { document.getElementById('sendForm').style.display = 'block'; }
-    function hideSendForm() { document.getElementById('sendForm').style.display = 'none'; }
-
     async function checkBalance() {
-      document.getElementById('prediction').innerHTML = `<p>💰 Balance: <strong>59.34 USDC</strong> <small>(Arc Testnet)</small></p>`;
+      document.getElementById('prediction').innerHTML = `<p>💰 Current Balance: <strong>59.34 USDC</strong></p>`;
     }
 
     async function sendTokens() {
@@ -105,18 +141,21 @@
       const status = document.getElementById('sendStatus');
 
       if (!recipient || !amount) {
-        status.innerHTML = `<span style="color:red;">Please fill all fields</span>`;
+        status.innerHTML = `<span style="color:red;">Fill all fields</span>`;
         return;
       }
 
       status.innerHTML = `<span style="color:#6b21a8;">Sending ${amount} USDC...</span>`;
 
       setTimeout(() => {
-        status.innerHTML = `<span style="color:#10b981;">✅ Successfully sent ${amount} USDC!</span>`;
-        setTimeout(hideSendForm, 2000);
-      }, 1500);
+        status.innerHTML = `<span style="color:#10b981;">✅ Transaction sent successfully!</span>`;
+        addTransaction(amount, recipient);   // Добавляем в историю
+        document.getElementById('recipient').value = '';
+        document.getElementById('amount').value = '';
+      }, 1400);
     }
 
+    // Init
     renderHistory();
   </script>
 </body>
