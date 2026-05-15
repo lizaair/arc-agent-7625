@@ -22,12 +22,9 @@
     button { padding:18px 36px; background:#6b21a8; color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer; transition:0.3s; }
     button:hover { background:#7c3aed; transform:translateY(-4px); }
 
-    input { padding:18px 22px; margin:12px 0; border:1px solid #ddd; border-radius:18px; width:100%; font-size:1.05rem; }
-
-    .message { margin:12px 0; padding:16px 22px; border-radius:20px; max-width:85%; }
-    .user { background:#6b21a8; color:white; margin-left:auto; }
-    .asil { background:#f1f1f1; margin-right:auto; }
-    .history-item { padding:18px; background:#f8f9fa; border-radius:18px; margin:10px 0; }
+    .history-item { padding:18px 24px; background:#f8f9fa; border-radius:20px; margin:12px 0; font-size:1.05rem; }
+    .positive { color:#10b981; font-weight:700; }
+    .negative { color:#ef4444; font-weight:700; }
   </style>
 </head>
 <body>
@@ -51,7 +48,8 @@
     <!-- BTC Price -->
     <div class="tab-content" id="tab0">
       <button onclick="makePrediction()">Get BTC Price & Forecast</button>
-      <div class="card" id="prediction">Press button to start</div>
+      <div class="card" id="prediction" style="font-size:1.3rem; min-height:110px;">Press the button</div>
+      
       <h3>Prediction History</h3>
       <div class="card" id="predHistory"></div>
     </div>
@@ -74,7 +72,7 @@
         <input type="text" id="recipient" placeholder="Recipient Address (0x...)">
         <input type="number" id="amount" step="0.01" placeholder="Amount USDC">
         <button onclick="sendTokens()" style="width:100%; margin-top:20px;">Send USDC</button>
-        <div id="sendStatus" style="margin-top:20px; font-weight:500;"></div>
+        <div id="sendStatus" style="margin-top:20px;"></div>
       </div>
       <h3>Send History</h3>
       <div class="card" id="sendHistory"></div>
@@ -105,18 +103,26 @@
     async function makePrediction() {
       const el = document.getElementById('prediction');
       el.innerHTML = "Asil is thinking...";
+      
       try {
         const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
         const data = await res.json();
         const price = parseFloat(data.price).toLocaleString();
         const change = (Math.random() * 8 - 3.5).toFixed(2);
-        const text = `BTC: $${price} | 4h: ${change > 0 ? '+' : ''}${change}%`;
+        const isPositive = change > 0;
+        
+        const forecastHTML = `<span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${change}%</span>`;
+        const text = `BTC: <strong>$${price}</strong> | 4h Forecast: ${forecastHTML}`;
+        
         el.innerHTML = text;
+
         predictions.unshift(text + " • " + new Date().toLocaleTimeString('en-US'));
-        if (predictions.length > 12) predictions.pop();
+        if (predictions.length > 15) predictions.pop();
         localStorage.setItem('pred', JSON.stringify(predictions));
         renderHistories();
-      } catch(e) { el.innerHTML = "Failed to load"; }
+      } catch(e) {
+        el.innerHTML = "Failed to load price";
+      }
     }
 
     function sendTokens() {
@@ -124,7 +130,7 @@
       const recipient = document.getElementById('recipient').value;
       const status = document.getElementById('sendStatus');
 
-      if (!amount || !recipient) return status.innerHTML = "Please fill all fields";
+      if (!amount || !recipient) return status.innerHTML = `<span style="color:red;">Please fill all fields</span>`;
 
       status.innerHTML = "Sending...";
       setTimeout(() => {
@@ -134,7 +140,7 @@
         if (sends.length > 10) sends.pop();
         localStorage.setItem('sends', JSON.stringify(sends));
         renderHistories();
-      }, 1300);
+      }, 1400);
     }
 
     function sendMessage() {
@@ -147,7 +153,7 @@
       input.value = "";
 
       setTimeout(() => {
-        let reply = "Got it! What else?";
+        let reply = "Got it! What else can I help you with?";
         if (text.toLowerCase().includes("btc") || text.toLowerCase().includes("price")) reply = "BTC is around $103,400 right now.";
         if (text.toLowerCase().includes("balance")) reply = "Your balance is 59.34 USDC.";
         chat.innerHTML += `<div class="message asil">${reply}</div>`;
@@ -157,7 +163,7 @@
 
     window.onload = () => {
       renderHistories();
-      document.getElementById('chat').innerHTML = `<div class="message asil">Hello! I'm Asil.<br>Ask me anything about BTC, balance or transactions.</div>`;
+      document.getElementById('chat').innerHTML = `<div class="message asil">Hello! I'm Asil.<br>Ask me anything about BTC or transactions.</div>`;
     };
   </script>
 </body>
