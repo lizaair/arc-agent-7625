@@ -14,17 +14,17 @@
     h1 { font-family:'Space Grotesk', sans-serif; font-size:3.4rem; margin:0; }
     .tag { background:#6b21a8; color:white; padding:6px 18px; border-radius:9999px; font-size:0.95rem; }
 
-    .tabs { display:flex; gap:10px; margin-bottom:30px; border-bottom:2px solid #eee; }
-    .tab { padding:12px 28px; cursor:pointer; font-weight:600; border-radius:12px 12px 0 0; }
+    .tabs { display:flex; gap:8px; margin-bottom:30px; flex-wrap:wrap; }
+    .tab { padding:12px 24px; cursor:pointer; font-weight:600; border-radius:12px; background:#f1f1f1; }
     .tab.active { background:#6b21a8; color:white; }
 
-    button { padding:16px 36px; background:#6b21a8; color:white; border:none; border-radius:9999px; font-weight:600; cursor:pointer; }
-    button:hover { background:#7c3aed; transform:translateY(-2px); }
-    .card { background:#f8f9fa; border-radius:20px; padding:28px; margin:20px 0; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
+    .card { background:#f8f9fa; border-radius:20px; padding:28px; margin:25px 0; }
+    button { padding:14px 28px; background:#6b21a8; color:white; border:none; border-radius:9999px; font-weight:600; cursor:pointer; }
+    button:hover { background:#7c3aed; }
     input { padding:14px; margin:10px 0; border:1px solid #ddd; border-radius:12px; width:100%; }
 
-    .tx { padding:14px; margin:10px 0; background:white; border-radius:12px; border-left:4px solid #6b21a8; }
-    .success { color:#10b981; }
+    .history { max-height:400px; overflow-y:auto; }
+    .history-item { padding:14px; margin:10px 0; background:white; border-radius:12px; border-left:4px solid #6b21a8; }
   </style>
 </head>
 <body>
@@ -38,125 +38,109 @@
       </div>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs">
       <div class="tab active" onclick="switchTab(0)">🧠 Prediction</div>
-      <div class="tab" onclick="switchTab(1)">💸 Send USDC</div>
-      <div class="tab" onclick="switchTab(2)">📜 Transaction History</div>
+      <div class="tab" onclick="switchTab(1)">💬 Chat</div>
+      <div class="tab" onclick="switchTab(2)">💸 Send USDC</div>
+      <div class="tab" onclick="switchTab(3)">🚰 Faucet</div>
     </div>
 
-    <!-- Tab 1: Prediction -->
+    <!-- Prediction Tab -->
     <div class="tab-content" id="tab0">
-      <div style="display:flex; gap:14px; flex-wrap:wrap; margin-bottom:20px;">
-        <button onclick="makePrediction()">Make BTC Prediction</button>
-        <button onclick="checkBalance()">Check Balance</button>
-      </div>
-      <div class="card" id="prediction">Click button to start</div>
+      <button onclick="makePrediction()" style="margin-bottom:15px;">Make BTC Prediction</button>
+      <div class="card" id="prediction">Click the button to get prediction</div>
+      <h3>Prediction History</h3>
+      <div class="card history" id="predHistory"></div>
     </div>
 
-    <!-- Tab 2: Send USDC -->
+    <!-- Chat Tab -->
     <div class="tab-content" id="tab1" style="display:none;">
-      <div class="card">
-        <h3>💸 Send USDC on Arc Testnet</h3>
-        <input type="text" id="recipient" placeholder="Recipient Address (0x...)" />
-        <input type="number" id="amount" step="0.01" placeholder="Amount USDC" />
-        <button onclick="sendTokens()" style="background:#10b981; width:100%; margin-top:15px;">Confirm Transaction</button>
-        <div class="status" id="sendStatus"></div>
-      </div>
+      <div class="card" style="min-height:300px;">Chat with Asil (coming soon)</div>
     </div>
 
-    <!-- Tab 3: Transaction History -->
+    <!-- Send USDC Tab -->
     <div class="tab-content" id="tab2" style="display:none;">
       <div class="card">
-        <h3>📜 Transaction History</h3>
-        <div id="txHistory">No transactions yet.</div>
+        <h3>Send USDC</h3>
+        <input type="text" id="recipient" placeholder="Recipient 0x address" />
+        <input type="number" id="amount" step="0.01" placeholder="Amount USDC" />
+        <button onclick="sendTokens()" style="width:100%; margin-top:10px;">Send Transaction</button>
+        <div id="sendStatus"></div>
+      </div>
+      <h3>Send History</h3>
+      <div class="card history" id="sendHistory"></div>
+    </div>
+
+    <!-- Faucet Tab -->
+    <div class="tab-content" id="tab3" style="display:none;">
+      <div class="card">
+        <h3>Get Test Tokens</h3>
+        <p>Click the button below to open Circle Faucet</p>
+        <button onclick="window.open('https://faucet.circle.com/','_blank')" style="background:#10b981;">Open Faucet</button>
       </div>
     </div>
   </div>
 
   <script>
-    let predictions = JSON.parse(localStorage.getItem('agentPredictions')) || [];
-    let transactions = JSON.parse(localStorage.getItem('agentTransactions')) || [];
+    let predictions = JSON.parse(localStorage.getItem('predictions')) || [ ];
 
-    function renderHistory() {
-      const div = document.getElementById('txHistory');
-      if (transactions.length === 0) {
-        div.innerHTML = '<p style="opacity:0.6;">No transactions yet.</p>';
-        return;
-      }
-      div.innerHTML = transactions.map(tx => `
-        <div class="tx">
-          <strong>${tx.time}</strong><br>
-          Sent <strong>${tx.amount} USDC</strong> to <small>${tx.to.slice(0,12)}...</small><br>
-          <span class="success">✓ Confirmed on Arc Testnet</span>
-        </div>
-      `).join('');
-    }
-
-    function addTransaction(amount, to) {
-      transactions.unshift({
-        time: new Date().toLocaleString('en-US'),
-        amount: amount,
-        to: to
-      });
-      if (transactions.length > 20) transactions.pop();
-      localStorage.setItem('agentTransactions', JSON.stringify(transactions));
-      renderHistory();
-    }
-
-    // Tab switching
     function switchTab(n) {
-      document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === n));
-      document.querySelectorAll('.tab-content').forEach((c, i) => c.style.display = i === n ? 'block' : 'none');
+      document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
+      document.querySelectorAll('.tab-content').forEach((c,i) => c.style.display = i===n ? 'block' : 'none');
     }
 
-    async function makePrediction() { /* твой рабочий код */ 
-      const pred = document.getElementById('prediction');
-      pred.innerHTML = `<p>🧠 Asil is thinking...</p>`;
-      
-      try {
-        const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
-        const data = await res.json();
-        const price = parseFloat(data.price);
-        const change = (Math.random() * 8 - 3.5).toFixed(2);
-        const rec = parseFloat(change) > 3 ? "🚀 STRONG BUY" : parseFloat(change) > 0.8 ? "📈 BUY" : "📉 HOLD";
-
-        pred.innerHTML = `
-          <p><strong>Current BTC:</strong> $${price.toLocaleString()}</p>
-          <p><strong>4h Forecast:</strong> <span style="color:${change>0?'#6b21a8':'#9f1239'}">${change>0?'+':''}${change}%</span></p>
-          <p><strong>Recommendation:</strong> ${rec}</p>
-        `;
-      } catch(e) {
-        pred.innerHTML = `<p>⚠️ Failed to fetch price</p>`;
-      }
+    function renderPredHistory() {
+      const el = document.getElementById('predHistory');
+      el.innerHTML = predictions.length === 0 ? '<p>No predictions yet.</p>' : 
+        predictions.map(p => `<div class="history-item">${p.time} — BTC $${p.price} <strong>${p.rec}</strong></div>`).join('');
     }
 
-    async function checkBalance() {
-      document.getElementById('prediction').innerHTML = `<p>💰 Current Balance: <strong>59.34 USDC</strong></p>`;
+    function renderSendHistory() {
+      const el = document.getElementById('sendHistory');
+      el.innerHTML = transactions.length === 0 ? '<p>No transactions yet.</p>' : 
+        transactions.map(t => `<div class="history-item">${t.time} — Sent ${t.amount} USDC</div>`).join('');
+    }
+
+    async function makePrediction() {
+      const box = document.getElementById('prediction');
+      box.innerHTML = "Asil is thinking...";
+
+      const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
+      const data = await res.json();
+      const price = parseFloat(data.price).toFixed(0);
+      const change = (Math.random()*7 - 3).toFixed(2);
+      const rec = change > 2 ? "🟢 STRONG BUY" : change > 0 ? "🟢 BUY" : "🔴 HOLD";
+
+      box.innerHTML = `BTC Price: $${price}<br>Forecast: ${change}% <br>Recommendation: <strong>${rec}</strong>`;
+
+      predictions.unshift({time: new Date().toLocaleTimeString(), price, rec});
+      if (predictions.length > 12) predictions.pop();
+      localStorage.setItem('predictions', JSON.stringify(predictions));
+      renderPredHistory();
     }
 
     async function sendTokens() {
-      const recipient = document.getElementById('recipient').value.trim();
+      const recipient = document.getElementById('recipient').value;
       const amount = document.getElementById('amount').value;
       const status = document.getElementById('sendStatus');
 
-      if (!recipient || !amount) {
-        status.innerHTML = `<span style="color:red;">Fill all fields</span>`;
-        return;
-      }
+      if (!recipient || !amount) return status.innerHTML = "Please fill all fields";
 
-      status.innerHTML = `<span style="color:#6b21a8;">Sending ${amount} USDC...</span>`;
+      status.innerHTML = `Sending ${amount} USDC...`;
 
       setTimeout(() => {
-        status.innerHTML = `<span style="color:#10b981;">✅ Transaction sent successfully!</span>`;
-        addTransaction(amount, recipient);   // Добавляем в историю
-        document.getElementById('recipient').value = '';
-        document.getElementById('amount').value = '';
-      }, 1400);
+        status.innerHTML = `<span style="color:green;">✅ Sent ${amount} USDC successfully!</span>`;
+        
+        transactions.unshift({time: new Date().toLocaleTimeString(), amount});
+        if (transactions.length > 10) transactions.pop();
+        localStorage.setItem('transactions', JSON.stringify(transactions));
+        renderSendHistory();
+      }, 1200);
     }
 
     // Init
-    renderHistory();
+    renderPredHistory();
+    renderSendHistory();
   </script>
 </body>
 </html>
