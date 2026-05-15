@@ -9,24 +9,29 @@
     
     body { margin:0; padding:0; background:#f8f9fc; font-family:'Inter', sans-serif; }
     .container { max-width:1000px; margin:40px auto; padding:0 60px; }
-    .header { display:flex; align-items:center; gap:50px; margin-bottom:30px; }
-    .creature { width:230px; height:230px; background:url('https://files.catbox.moe/mewziy.png') center/contain no-repeat; filter:drop-shadow(0 25px 40px rgba(107,33,168,0.25)); }
-    h1 { font-family:'Space Grotesk', sans-serif; font-size:3.5rem; margin:0; background:linear-gradient(90deg,#6b21a8,#a855f7); -webkit-background-clip:text; -webkit-text-fill-color:transparent; }
+    .header { display:flex; align-items:center; gap:50px; margin-bottom:40px; }
+    .creature { width:240px; height:240px; background:url('https://files.catbox.moe/mewziy.png') center/contain no-repeat; filter:drop-shadow(0 25px 45px rgba(107,33,168,0.3)); }
+    h1 { font-family:'Space Grotesk', sans-serif; font-size:3.6rem; margin:0; letter-spacing:-2px; }
 
-    .tabs { display:flex; gap:12px; margin:30px 0; flex-wrap:wrap; }
-    .tab { padding:14px 28px; cursor:pointer; border-radius:999px; font-weight:600; transition:0.3s; background:#fff; box-shadow:0 4px 15px rgba(0,0,0,0.05); }
-    .tab.active { background:#6b21a8; color:white; transform:scale(1.08); }
+    .tabs { display:flex; gap:15px; margin:30px 0; flex-wrap:wrap; }
+    .tab { padding:16px 32px; cursor:pointer; border-radius:999px; font-weight:600; background:white; box-shadow:0 4px 15px rgba(0,0,0,0.06); transition:0.3s; }
+    .tab.active { background:#6b21a8; color:white; transform:scale(1.05); }
 
-    .card { background:white; border-radius:28px; padding:32px; margin:25px 0; box-shadow:0 10px 30px rgba(0,0,0,0.08); }
+    .card { background:white; border-radius:28px; padding:32px; margin:25px 0; box-shadow:0 10px 35px rgba(0,0,0,0.08); }
 
-    button { padding:18px 36px; background:#6b21a8; color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer; transition:0.3s; font-size:1.05rem; }
+    button { padding:18px 36px; background:#6b21a8; color:white; border:none; border-radius:999px; font-weight:600; cursor:pointer; transition:0.3s; }
     button:hover { background:#7c3aed; transform:translateY(-4px); }
 
-    input { padding:18px 22px; margin:12px 0; border:1px solid #e0e0e0; border-radius:16px; width:100%; font-size:1.05rem; }
-
-    .positive { color:#10b981; font-weight:600; }
-    .negative { color:#ef4444; font-weight:600; }
-    .success { color:#10b981; font-size:1.1rem; }
+    .history-item { 
+      padding:20px 24px; 
+      background:#f8f9fa; 
+      border-radius:20px; 
+      margin:12px 0; 
+      font-size:1.05rem;
+      border-left:6px solid #6b21a8;
+    }
+    .positive { color:#10b981; font-weight:700; }
+    .negative { color:#ef4444; font-weight:700; }
   </style>
 </head>
 <body>
@@ -34,7 +39,7 @@
     <div class="header">
       <div class="creature"></div>
       <div>
-        <div class="tag">Built on Arc Testnet</div>
+        <div class="tag">Arc Testnet</div>
         <h1>Asil</h1>
         <p style="font-size:1.4rem; opacity:0.9;">Autonomous AI Agent #7625</p>
       </div>
@@ -49,106 +54,61 @@
 
     <!-- BTC Price -->
     <div class="tab-content" id="tab0">
-      <button onclick="makePrediction()">🔄 Get BTC Price & Forecast</button>
-      <div class="card" id="prediction" style="font-size:1.3rem; min-height:100px;">Press button to start</div>
+      <button onclick="makePrediction()">Get BTC Price & Forecast</button>
+      <div class="card" id="prediction" style="font-size:1.35rem; min-height:110px;">Press the button</div>
+      
       <h3>Prediction History</h3>
       <div class="card" id="predHistory"></div>
     </div>
 
-    <!-- Chat -->
-    <div class="tab-content" id="tab1" style="display:none;">
-      <div class="card">
-        <div id="chat" style="height:420px; overflow-y:auto; padding:20px; background:#f8f9fa; border-radius:20px;"></div>
-        <div style="display:flex; gap:10px; margin-top:15px;">
-          <input type="text" id="userInput" placeholder="Ask Asil anything..." style="flex:1;">
-          <button onclick="sendMessage()">Send</button>
-        </div>
-      </div>
-    </div>
-
-    <!-- Send USDC -->
-    <div class="tab-content" id="tab2" style="display:none;">
-      <div class="card">
-        <h3>💸 Send USDC</h3>
-        <input type="text" id="recipient" placeholder="Recipient Address (0x...)">
-        <input type="number" id="amount" step="0.01" placeholder="Amount USDC">
-        <button onclick="sendTokens()" style="width:100%; margin-top:20px;">Send USDC</button>
-        <div id="sendStatus" style="margin-top:20px; min-height:30px;"></div>
-      </div>
-      <h3>Send History</h3>
-      <div class="card" id="sendHistory"></div>
-    </div>
-
-    <!-- Faucet -->
-    <div class="tab-content" id="tab3" style="display:none;">
-      <div class="card">
-        <button onclick="window.open('https://faucet.circle.com/', '_blank')" style="width:100%;">🚰 Get Test USDC</button>
-      </div>
-    </div>
+    <!-- Chat, Send, Faucet — можно добавить позже -->
   </div>
 
   <script>
     let predictions = JSON.parse(localStorage.getItem('pred')) || [];
-    let sends = JSON.parse(localStorage.getItem('sends')) || [];
 
     function switchTab(n) {
       document.querySelectorAll('.tab').forEach((t,i) => t.classList.toggle('active', i===n));
       document.querySelectorAll('.tab-content').forEach((c,i) => c.style.display = i===n ? 'block' : 'none');
     }
 
-    function renderHistories() {
-      document.getElementById('predHistory').innerHTML = predictions.map(p => `<div class="history-item">${p}</div>`).join('') || '<p>No predictions yet</p>';
-      document.getElementById('sendHistory').innerHTML = sends.map(s => `<div class="history-item">${s}</div>`).join('') || '<p>No sends yet</p>';
+    function renderHistory() {
+      const container = document.getElementById('predHistory');
+      if (predictions.length === 0) {
+        container.innerHTML = '<p style="opacity:0.6; text-align:center;">No predictions yet</p>';
+        return;
+      }
+      container.innerHTML = predictions.map(p => `
+        <div class="history-item">${p}</div>
+      `).join('');
     }
 
     async function makePrediction() {
       const el = document.getElementById('prediction');
       el.innerHTML = "Asil is thinking...";
-      
+
       try {
         const res = await fetch("https://api.binance.com/api/v3/ticker/price?symbol=BTCUSDT");
         const data = await res.json();
         const price = parseFloat(data.price).toLocaleString();
         const change = (Math.random() * 8 - 3.5).toFixed(2);
         const isPositive = change > 0;
+        const rec = isPositive && change > 2 ? "STRONG BUY" : isPositive ? "BUY" : "HOLD";
+
+        const text = `BTC: <strong>$${price}</strong> | 4h Forecast: <span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${change}%</span> → ${rec}`;
         
-        const text = `BTC: <strong>$${price}</strong> | 4h Forecast: <span class="${isPositive ? 'positive' : 'negative'}">${isPositive ? '+' : ''}${change}%</span>`;
         el.innerHTML = text;
 
         predictions.unshift(text + " • " + new Date().toLocaleTimeString('en-US'));
-        if (predictions.length > 12) predictions.pop();
+        if (predictions.length > 15) predictions.pop();
         localStorage.setItem('pred', JSON.stringify(predictions));
-        renderHistories();
+        renderHistory();
       } catch(e) {
-        el.innerHTML = "Failed to load BTC price";
+        el.innerHTML = "Failed to load price";
       }
     }
 
-    function sendTokens() {
-      const amount = document.getElementById('amount').value;
-      const recipient = document.getElementById('recipient').value;
-      const status = document.getElementById('sendStatus');
-
-      if (!amount || !recipient) return status.innerHTML = `<span style="color:red;">Please fill all fields</span>`;
-
-      status.innerHTML = "Sending...";
-
-      setTimeout(() => {
-        const msg = `✅ Sent ${amount} USDC successfully • ${new Date().toLocaleTimeString('en-US')}`;
-        status.innerHTML = `<span class="success">${msg}</span>`;
-        sends.unshift(msg);
-        if (sends.length > 10) sends.pop();
-        localStorage.setItem('sends', JSON.stringify(sends));
-        renderHistories();
-      }, 1400);
-    }
-
-    function sendMessage() {
-      // Чат можно улучшить позже
-      alert("Chat feature is ready! Ask me about BTC, balance, etc.");
-    }
-
-    window.onload = renderHistories;
+    window.onload = renderHistory;
   </script>
 </body>
 </html>
